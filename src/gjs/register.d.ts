@@ -24,4 +24,6 @@ export type OmitThis<T> = Omit<T, PropertyThis<T>>
 
 type ProblematicKeys = '_init' | 'connect' | 'connect_after' | 'container'
 
-export type Instance<T extends new(...ags: any[]) => any> = Omit<OmitThis<InstanceType<T>>, ProblematicKeys>
+export type Instance<T extends new(...ags: any[]) => any>
+    = Omit<OmitThis<InstanceType<T>>, ProblematicKeys>
+    & { connect(id: string, callback: (...args: any[]) => void) }

@@ -16,7 +16,7 @@ declare class _PopupBaseMenuItem extends St.BoxLayout {
     _init(params?: Params): void
     get actor(): this
 
-    activate(event: any): void
+    activate(event: Clutter.Event): void
     setSesitive(sensitive: boolean): void
 }
 type PopupBaseMenuItemCtor = Registered<typeof _PopupBaseMenuItem, BooleanProps<'active' | 'sensitive'>>
@@ -95,6 +95,11 @@ export abstract class PopupMenuBase<A extends Clutter.Actor = Clutter.Actor> {
     removeAll(): void
     toggle(): void
     destroy(): void
+
+    // Signals.addSignalMethods
+    connect(id: string, callback: (...args: any[]) => void): void
+    disconnect(): boolean
+    emit(signal: string, ...data: any[]): void
 }
 
 export class PopupMenu<A extends Clutter.Actor = Clutter.Actor> {
