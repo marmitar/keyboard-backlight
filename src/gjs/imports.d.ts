@@ -4,6 +4,7 @@ interface CurrentExtension {
     metadata: typeof metadata,
     imports: {
         utils: typeof import('../utils')
+        switch: typeof import('../switch')
     }
 }
 
