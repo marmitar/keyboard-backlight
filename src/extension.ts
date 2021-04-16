@@ -4,7 +4,7 @@ const { Button } = imports.ui.panelMenu
 
 const Me = imports.misc.extensionUtils.getCurrentExtension()
 const { exec, registerClass } = Me.imports.utils
-const { Switch } = Me.imports.switch
+const { Switch, keyboardStatus } = Me.imports.switch
 
 
 const SwitchScroll = registerClass(
@@ -33,12 +33,14 @@ const SwitchNum = registerClass(
 
 const BacklightMenu = registerClass(
     class BacklightMenu extends Button {
-        private switches: InstanceType<typeof Switch>[] = []
+        private _switches: {
+            [key: string]: InstanceType<typeof Switch>
+        } = {}
 
         // @ts-ignore
         _init(name = Me.metadata.name) {
             super._init(0.0, name, false)
-            this.switches = []
+            this._switches = {}
 
             // Create icon box for top panel.
             const box = new St.BoxLayout()
@@ -47,22 +49,44 @@ const BacklightMenu = registerClass(
                 style_class: 'system-status-icon'
             }))
             this.add_child(box)
+
+            this.menu!.connect('open-state-changed', (_, open: boolean) => {
+                if (open) {
+                    this.updateStatus()
+                }
+            })
         }
 
         createSwitch<T extends InstanceType<typeof Switch>>(switchCtor: new() => T) {
             const popup = new switchCtor()
-            this.menu!.addMenuItem(popup)
+            const name = popup.switchName
 
-            this.switches.push(popup)
+            if (this._switches[name]) {
+                throw new Error(`switch ${name} already defined`)
+            }
+
+            this.menu!.addMenuItem(popup)
+            this._switches[name] = popup
+        }
+
+        updateStatus() {
+            const status = keyboardStatus(Object.keys(this._switches))
+            for (const sw in status) {
+                this._switches[sw].setToggleState(status[sw])
+            }
         }
 
         switchAll(state: boolean) {
-            this.switches.forEach(sw => sw.switch(state))
+            for (const name in this._switches) {
+                this._switches[name].switch(state)
+            }
         }
 
         clear() {
-            this.switches.forEach(sw => sw.destroy())
-            this.switches = []
+            for (const name in this._switches) {
+                this._switches[name].destroy()
+            }
+            this._switches = {}
         }
 
         destroy() {
