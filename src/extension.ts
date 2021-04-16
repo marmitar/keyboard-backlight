@@ -1,124 +1,102 @@
-const { GLib, St } = imports.gi
+const { St } = imports.gi
 const Main = imports.ui.main
 const { Button } = imports.ui.panelMenu
-const { PopupSwitchMenuItem } = imports.ui.popupMenu
 
-const ExtensionUtils = imports.misc.extensionUtils
-const Me = ExtensionUtils.getCurrentExtension()
+const Me = imports.misc.extensionUtils.getCurrentExtension()
 const { exec, registerClass } = Me.imports.utils
+const { Switch } = Me.imports.switch
 
 
-/**
- * Prepare scroll lock for keyboard backlight control.
- */
-function prepareScrollLock() {
-    exec('/usr/bin/xmodmap', '-e', 'add mod3 = Scroll_Lock')
-}
-
-/**
- * Switch backlight to given state.
- *
- * @param {boolean} state
- */
-function switchBacklight(state: boolean) {
-    const op = state? 'led' : '-led'
-    exec('/usr/bin/xset', op, 'named', 'Scroll Lock')
-}
-
-const BacklightMenu = registerClass(class BacklightMenu extends Button {
-        popup?: InstanceType<typeof PopupSwitchMenuItem>
-
-        /**
-         * Constructor.
-         */
+const SwitchScroll = registerClass(
+    class SwitchScroll extends Switch {
         // @ts-ignore
-        _init(name: string = Me.metadata.name) {
-            super._init(0.0, name, false)
-
-            this.addIconBox()
-            this.addSwitchPopup()
+        _init(name = 'Scroll Lock') {
+            super._init(name, {
+                on: ['/usr/bin/xset', 'led', 'named', 'Scroll Lock'],
+                off: ['/usr/bin/xset', '-led', 'named', 'Scroll Lock']
+            })
+            log('[BACKLIGHTER]: scroll')
         }
+    }
+)
 
-        /**
-         * Create icon box for top panel.
-         */
-        addIconBox() {
+const SwitchNum = registerClass(
+    class SwitchNum extends Switch {
+        // @ts-ignore
+        _init(name = 'Num Lock') {
+            super._init(name, {
+                on: ['/usr/bin/numlockx', 'on'],
+                off: ['/usr/bin/numlockx', 'off']
+            })
+            log('[BACKLIGHTER]: num')
+        }
+    }
+)
+
+const BacklightMenu = registerClass(
+    class BacklightMenu extends Button {
+        private switches: InstanceType<typeof Switch>[] = []
+
+        // @ts-ignore
+        _init(name = Me.metadata.name) {
+            super._init(0.0, name, false)
+            this.switches = []
+
+            // Create icon box for top panel.
             const box = new St.BoxLayout()
             box.add_actor(new St.Icon({
                 icon_name: 'system-run-symbolic',
                 style_class: 'system-status-icon'
             }))
-
             this.add_child(box)
         }
 
-        /**
-         * Create popup with a switch that turn on or off
-         * at every toggle.
-         */
-        addSwitchPopup(initialState: boolean = false) {
-            this.popup = new PopupSwitchMenuItem(
-                'Backlight',
-                initialState,
-                { reactive: true }
-            )
-            this.popup.connect('toggled', (_, state) => {
-                switchBacklight(state)
-            })
-            this.menu!.addMenuItem(this.popup)
+        createSwitch<T extends InstanceType<typeof Switch>>(switchCtor: new() => T) {
+            const popup = new switchCtor()
+            this.menu!.addMenuItem(popup)
 
-            switchBacklight(initialState)
+            this.switches.push(popup)
         }
 
-        /**
-         * Switch keyboard on or off.
-         */
-        switch(state: boolean) {
-            this.popup!.setToggleState(state)
-            switchBacklight(state)
+        switchAll(state: boolean) {
+            log('[BACKLIGHTER]: switch all')
+            this.switches.forEach(sw => sw.switch(state))
         }
-})
+
+        clear() {
+            this.switches.forEach(sw => sw.destroy())
+            this.switches = []
+        }
+
+        destroy() {
+            this.clear()
+            super.destroy()
+        }
+    }
+)
+
 
 class BacklightExtension {
-    initialState: boolean
-    indicator: InstanceType<typeof BacklightMenu> | null
+    private indicator: InstanceType<typeof BacklightMenu> | null = null
 
-    /**
-     * Constructor.
-     */
-    constructor(initialState: boolean = false) {
-        this.initialState = initialState
-        this.indicator = null
-    }
-
-    /**
-     * Enable extension.
-     */
-    enable(name: string = 'backlight-keyboard') {
-        prepareScrollLock()
+    enable(name = 'backlight-keyboard') {
+        // Prepare scroll lock for keyboard backlight control.
+        exec('/usr/bin/xmodmap', '-e', 'add mod3 = Scroll_Lock')
 
         this.indicator = new BacklightMenu()
         Main.panel.addToStatusArea(name, this.indicator)
 
-        this.switch(this.initialState)
+        this.indicator.createSwitch(SwitchScroll)
+        this.indicator.createSwitch(SwitchNum)
+        this.indicator.switchAll(true)
     }
 
-    /**
-     * Disable extension.
-     */
     disable() {
-        this.indicator!.destroy()
+        this.indicator?.destroy()
         this.indicator = null
-    }
-
-    /**
-     * Switch keyboard on or off.
-     */
-    switch(state: boolean) {
-        this.indicator?.switch(state)
     }
 }
 
-function init() {
-    return new BacklightExtension(true)
+export function init() {
+    return new BacklightExtension()
 }
