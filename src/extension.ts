@@ -1,6 +1,8 @@
+import type * as Clutter from '@gi-types/clutter'
 const { St } = imports.gi
 const Main = imports.ui.main
 const { Button } = imports.ui.panelMenu
+const { PopupImageMenuItem } = imports.ui.popupMenu
 
 const Me = imports.misc.extensionUtils.getCurrentExtension()
 const { exec, registerClass } = Me.imports.utils
@@ -33,9 +35,8 @@ const SwitchNum = registerClass(
 
 const BacklightMenu = registerClass(
     class BacklightMenu extends Button {
-        private _switches: {
-            [key: string]: InstanceType<typeof Switch>
-        } = {}
+        private _switches: Record<string, InstanceType<typeof Switch>> = {}
+        private _button?: InstanceType<typeof PopupImageMenuItem>
 
         // @ts-ignore
         _init(name = Me.metadata.name) {
@@ -55,6 +56,15 @@ const BacklightMenu = registerClass(
                     this.updateStatus()
                 }
             })
+        }
+
+        addButton(onClick: (ev: Clutter.Event) => void, text?: string, icon?: string) {
+            const button = new PopupImageMenuItem(text, icon)
+            button.connect('activate', (_, ev) => onClick(ev))
+
+            this._button?.destroy()
+            this.menu!.addMenuItem(button)
+            this._button = button
         }
 
         createSwitch<T extends InstanceType<typeof Switch>>(switchCtor: new() => T) {
@@ -91,6 +101,7 @@ const BacklightMenu = registerClass(
 
         destroy() {
             this.clear()
+            this._button?.destroy()
             super.destroy()
         }
     }
@@ -100,9 +111,15 @@ const BacklightMenu = registerClass(
 class BacklightExtension {
     private indicator: InstanceType<typeof BacklightMenu> | null = null
 
-    enable(name = 'backlight-keyboard') {
-        // Prepare scroll lock for keyboard backlight control.
+    /**
+     * Prepare scroll lock for keyboard backlight control.
+     */
+    prepareScroll() {
         exec('/usr/bin/xmodmap', '-e', 'add mod3 = Scroll_Lock')
+    }
+
+    enable(name = 'backlight-keyboard') {
+        this.prepareScroll()
 
         this.indicator = new BacklightMenu()
         Main.panel.addToStatusArea(name, this.indicator)
@@ -110,6 +127,8 @@ class BacklightExtension {
         this.indicator.createSwitch(SwitchScroll)
         this.indicator.createSwitch(SwitchNum)
         this.indicator.switchAll(true)
+
+        this.indicator.addButton(this.prepareScroll, 'Reset Keymap', 'go-next')
     }
 
     disable() {
