@@ -1,28 +1,38 @@
 {
-  "scripts": {
-    "uuid": "npx json -f src/metadata.json uuid",
-    "path": "echo ~/.local/share/gnome-shell/extensions/$(npm run --silent uuid)",
-    "clean": "rm -rf target",
-    "prepare": "sh prepare.sh",
-    "prebuild": "npm run clean",
-    "build": "npx tsc",
-    "postbuild": "npm run prepare",
-    "cleandir": "rm -r $(npm run --silent path)",
-    "preinstall": "npm run build",
-    "install": "npm run send",
-    "presend": "npm run cleandir",
-    "send": "cp -r target $(npm run --silent path)"
-  },
-  "dependencies": {
-    "@gi-types/clutter": "^7.0.6",
-    "@gi-types/gio": "^2.66.9",
-    "@gi-types/glib": "^2.66.10",
-    "@gi-types/gobject": "^2.66.9",
-    "@gi-types/meta": "^3.38.5",
-    "@gi-types/shell": "^0.1.6",
-    "@gi-types/st": "^1.0.6",
-    "json": "^10.0.0",
-    "typescript": "^4.2.4"
-  },
-  "private": true
+    "name": "gnome-shell-extension-keyboard-backlight",
+    "description": "Keyboard Backlight Extension",
+    "version": "2.0-dev",
+    "private": true,
+    "license": "UNLICENSED",
+    "repository": "gitlab:tiagodepalves/keyboard-backlight",
+    "os": ["linux"],
+    "cpu": ["x64"],
+    "engines": {
+        "node": ">=16"
+    },
+    "scripts": {
+        "uuid": "npx json -f src/metadata.json uuid",
+        "path": "echo ~/.local/share/gnome-shell/extensions/$(npm run --silent uuid)",
+        "clean": "rm -rf target",
+        "prepare": "sh prepare.sh",
+        "prebuild": "npm run clean",
+        "build": "npx tsc",
+        "postbuild": "npm run prepare",
+        "cleandir": "rm -r $(npm run --silent path)",
+        "preinstall": "npm run build",
+        "install": "npm run send",
+        "presend": "npm run cleandir",
+        "send": "cp -r target $(npm run --silent path)"
+    },
+    "dependencies": {
+        "@gi-types/clutter": "^7.0.6",
+        "@gi-types/gio": "^2.66.9",
+        "@gi-types/glib": "^2.66.10",
+        "@gi-types/gobject": "^2.66.9",
+        "@gi-types/meta": "^3.38.5",
+        "@gi-types/shell": "^0.1.6",
+        "@gi-types/st": "^1.0.6",
+        "json": "^11.0.0",
+        "typescript": "^4.7.0-dev.20220226"
+    }
 }
