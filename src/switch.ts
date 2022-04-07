@@ -1,7 +1,7 @@
 const { PopupSwitchMenuItem } = imports.ui.popupMenu
 
 const Me = imports.misc.extensionUtils.getCurrentExtension()
-const { exec, registerClass } = Me.imports.utils
+const { exec } = Me.imports.utils
 
 
 type NonEmpty<T> = [T, ...T[]]
@@ -11,43 +11,41 @@ type ExecArgs = {
     off?: NonEmpty<string>,
 }
 
-export const Switch = registerClass(
-    class Switch extends PopupSwitchMenuItem {
-        private _args: ExecArgs = {}
-        private _switch_name: string = ""
+export class Switch {
+    private readonly args: ExecArgs
+    readonly popup: InstanceType<typeof PopupSwitchMenuItem>
+    readonly switchName: string
 
-        // @ts-ignore
-        _init(name: string, args?: ExecArgs) {
-            super._init(name, false, { reactive: true })
-            this._args = args ?? {}
-            this._switch_name = name
+    constructor(name: string, args?: ExecArgs) {
+        this.args = args ?? {}
+        this.switchName = name
+        this.popup = new PopupSwitchMenuItem(name, false, { reactive: true })
 
-            this.connect('toggled', (_, state) => {
-                this.switch(state)
-            })
-        }
+        this.popup.connect('toggled', (_, state) => {
+            this.switch(state)
+        })
+    }
 
-        get switchName(): string {
-            return this._switch_name
-        }
-
-        private _exec(cmd?: NonEmpty<string>) {
-            if (cmd) {
-                exec(...cmd)
-            }
-        }
-
-        switch(state?: boolean) {
-            if (state ?? !this.state) {
-                this._exec(this._args.on)
-                this.setToggleState(true)
-            } else {
-                this._exec(this._args.off)
-                this.setToggleState(false)
-            }
+    private run(cmd?: NonEmpty<string>) {
+        if (cmd) {
+            exec(...cmd)
         }
     }
-)
+
+    switch(state?: boolean) {
+        if (state ?? !this.popup.state) {
+            this.run(this.args.on)
+            this.popup.setToggleState(true)
+        } else {
+            this.run(this.args.off)
+            this.popup.setToggleState(false)
+        }
+    }
+
+    destroy() {
+        this.popup.destroy()
+    }
+}
 
 export function keyboardStatus<K extends string>(keys: K[]): Record<K, boolean | never> {
     const { stdout } = exec('/usr/bin/xset', 'q')
