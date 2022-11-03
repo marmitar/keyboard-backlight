@@ -1,29 +1,16 @@
-export * as St from '@gi-types/st'
-import { RegisteredClass, ParamSpec, ParamSpecBoolean, GType } from '@gi-types/gobject'
+import type { RegisteredClass, ParamSpec, ParamSpecBoolean, GType } from '@gi-types/gobject'
 
-
-export type Object<T = any> = { $gtype: GType<T> }
-
-export type Constructor<T = {}> = { new(...args: any[]): T, $gtype: GType }
+export type Constructor<T = {}> = new(...args: any[]) => any
 
 export type ParamSpecs = { [key: string]: ParamSpec }
-
-export type Interfaces = Object[]
-
-
-export type Registered<T extends Constructor, P extends ParamSpecs = {}, I extends Interfaces = []> = RegisteredClass<T, P, I>
-
 export type BooleanProps<K extends string> = { [key in K]: ParamSpecBoolean }
 
+export type GObject<T = any> = { $gtype: GType<T> }
+export type Interfaces = GObject[]
 
-type HasThis<T> = T | ((...args: any[]) => T)
+export type ProblematicKeys = '_init' | 'connect_after' | 'container'
+export type Sanitized<T extends Constructor>
+    = new (...args: ConstructorParameters<T>) => Omit<InstanceType<T>, ProblematicKeys>
 
-type PropertyThis<T> = ({ [K in keyof T]: T[K] extends HasThis<T> ? K : never })[keyof T]
-
-export type OmitThis<T> = Omit<T, PropertyThis<T>>
-
-type ProblematicKeys = '_init' | 'connect' | 'connect_after' | 'container'
-
-export type Instance<T extends new(...ags: any[]) => any>
-    = Omit<OmitThis<InstanceType<T>>, ProblematicKeys>
-    & { connect(id: string, callback: (...args: any[]) => void) }
+export type Registered<T extends Constructor, P extends ParamSpecs = {}, I extends Interfaces = []>
+    = Sanitized<RegisteredClass<T, P, I>>

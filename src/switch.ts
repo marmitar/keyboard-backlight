@@ -1,7 +1,5 @@
-const { PopupSwitchMenuItem } = imports.ui.popupMenu
-
-const Me = imports.misc.extensionUtils.getCurrentExtension()
-const { exec } = Me.imports.utils
+import { PopupSwitchMenuItem } from './gjs/ui/popupMenu.js'
+import { exec } from './utils.js'
 
 
 type NonEmpty<T> = [T, ...T[]]
@@ -13,7 +11,7 @@ type ExecArgs = {
 
 export class Switch {
     private readonly args: ExecArgs
-    readonly popup: InstanceType<typeof PopupSwitchMenuItem>
+    readonly popup: PopupSwitchMenuItem
     readonly switchName: string
 
     constructor(name: string, args?: ExecArgs) {

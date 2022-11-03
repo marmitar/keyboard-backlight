@@ -1,11 +1,9 @@
-import type { Registered, Constructor } from './gjs/register'
-import type { byteArray as ByteArray } from './gjs/imports'
-const { GLib, GObject } = imports.gi
+import { GLib } from './gjs/gi.js'
 
 /**
- * Converts `ByteArray` into `String`.
+ * Converts `Uint8Array` to `String`.
  */
-function ByteArrayToString(array: ByteArray | null): string {
+function byteArrayToString(array: Uint8Array | null): string {
     return String.fromCharCode(...array ?? [])
 }
 
@@ -39,8 +37,8 @@ export function exec(program: string, ...args: string[]) {
 
     const [ok, bufout, buferr, exitCode] = GLib.spawn_command_line_sync(cmd)
 
-    const stdout = ByteArrayToString(bufout)
-    const stderr = ByteArrayToString(buferr)
+    const stdout = byteArrayToString(bufout)
+    const stderr = byteArrayToString(buferr)
 
     if (!ok || exitCode !== 0) {
         // unsuccesfull execution
@@ -48,11 +46,4 @@ export function exec(program: string, ...args: string[]) {
     }
 
     return { stdout, stderr }
-}
-
-/**
- * Register class as GObject.
- */
-export function registerClass<Class extends Constructor>(target: Class): Registered<Class> {
-    return GObject.registerClass({ GTypeName: target.name }, target)
 }

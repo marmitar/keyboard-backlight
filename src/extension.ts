@@ -45,9 +45,9 @@ class AsyncExtension {
     }
 }
 
-export function init() {
+export function init(meta: typeof import('./metadata.json')) {
     return new AsyncExtension(async () => {
         const { BacklightExtension } = await import('./index.js')
-        return new BacklightExtension()
+        return new BacklightExtension(meta)
     })
 }

@@ -1,13 +1,11 @@
-import type * as Clutter from '@gi-types/clutter'
-const { St } = imports.gi
-const Main = imports.ui.main
-const { Button } = imports.ui.panelMenu
-const { PopupImageMenuItem } = imports.ui.popupMenu
+import { Clutter, St } from './gjs/gi.js'
+import main from './gjs/ui/main.js'
+import { Button } from './gjs/ui/panelMenu.js'
+import { PopupImageMenuItem } from './gjs/ui/popupMenu.js'
+import { keyboardStatus, Switch } from './switch.js'
+import { exec } from './utils.js'
 
-const Me = imports.misc.extensionUtils.getCurrentExtension()
-const { exec } = Me.imports.utils
-const { Switch, keyboardStatus } = Me.imports.switch
-
+import type * as Metadata from './metadata.json'
 
 class SwitchScroll extends Switch {
     constructor(name = 'Scroll Lock') {
@@ -28,12 +26,11 @@ class SwitchNum extends Switch {
 }
 
 class BacklightMenu {
-    private switches: Record<string, InstanceType<typeof Switch>>
-    private button?: InstanceType<typeof PopupImageMenuItem>
-    readonly parent: InstanceType<typeof Button>
+    private switches: Record<string, Switch>
+    private button?: PopupImageMenuItem
+    readonly parent: Button
 
-    // @ts-ignore
-    constructor(name = Me.metadata.name) {
+    constructor(name: string) {
         this.switches = {}
         this.parent = new Button(0.0, name, false)
 
@@ -52,7 +49,7 @@ class BacklightMenu {
         })
     }
 
-    addButton(onClick: (ev: Clutter.Event) => void, text?: string, icon?: string) {
+    addButton(onClick: (ev: typeof Clutter.Event) => void, text?: string, icon?: string) {
         const button = new PopupImageMenuItem(text, icon)
         button.connect('activate', (_, ev) => onClick(ev))
 
@@ -61,7 +58,7 @@ class BacklightMenu {
         this.button = button
     }
 
-    createSwitch<T extends InstanceType<typeof Switch>>(switchCtor: new() => T) {
+    createSwitch<T extends Switch>(switchCtor: new() => T) {
         const popup = new switchCtor()
         const name = popup.switchName
 
@@ -101,7 +98,12 @@ class BacklightMenu {
 }
 
 export class BacklightExtension {
-    private indicator: InstanceType<typeof BacklightMenu> | null = null
+    private readonly metadata: typeof Metadata
+    private indicator: BacklightMenu | null = null
+
+    constructor(metadata: typeof Metadata) {
+        this.metadata = metadata
+    }
 
     /**
      * Prepare scroll lock for keyboard backlight control.
@@ -110,11 +112,11 @@ export class BacklightExtension {
         exec('/usr/bin/xmodmap', '-e', 'add mod3 = Scroll_Lock')
     }
 
-    enable(name = 'backlight-keyboard') {
+    enable(role = 'backlight-keyboard') {
         this.prepareScroll()
 
-        this.indicator = new BacklightMenu()
-        Main.panel.addToStatusArea(name, this.indicator.parent)
+        this.indicator = new BacklightMenu(this.metadata.name)
+        main.panel.addToStatusArea(role, this.indicator.parent)
 
         this.indicator.createSwitch(SwitchScroll)
         this.indicator.createSwitch(SwitchNum)
