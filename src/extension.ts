@@ -74,19 +74,19 @@ class BacklightMenu {
     updateStatus() {
         const status = keyboardStatus(Object.keys(this.switches))
         for (const sw in status) {
-            this.switches[sw].switch(status[sw])
+            this.switches[sw]?.switch(status[sw])
         }
     }
 
     switchAll(state: boolean) {
         for (const name in this.switches) {
-            this.switches[name].switch(state)
+            this.switches[name]?.switch(state)
         }
     }
 
     clear() {
         for (const name in this.switches) {
-            this.switches[name].destroy()
+            this.switches[name]?.destroy()
         }
         this.switches = {}
     }
