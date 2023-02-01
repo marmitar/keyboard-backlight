@@ -1,5 +1,7 @@
 import { GLib } from './gjs/gi.js'
 
+type NonEmpty<T> = [T, ...T[]]
+
 /**
  * Converts `Uint8Array` to `String`.
  */
@@ -31,9 +33,8 @@ class ExecError {
 /**
  * Call program with given arguments.
  */
-export function exec(program: string, ...args: string[]) {
-    const pargs = args.map(arg => "'" + arg + "'")
-    const cmd = [program, ...pargs].join(' ')
+export function exec(...args: NonEmpty<string>) {
+    const cmd = args.map(arg => `'${arg}'`).join(' ')
 
     const [ok, bufout, buferr, exitCode] = GLib.spawn_command_line_sync(cmd)
 
