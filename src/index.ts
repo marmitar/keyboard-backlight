@@ -26,12 +26,11 @@ class SwitchNum extends Switch {
 }
 
 class BacklightMenu {
-    private switches: Record<string, Switch>
-    private button?: PopupImageMenuItem
+    private readonly switches = new Map<string, Switch>()
+    private button?: PopupImageMenuItem = undefined
     readonly parent: Button
 
     constructor(name: string) {
-        this.switches = {}
         this.parent = new Button(0.0, name, false)
 
         // Create icon box for top panel.
@@ -62,32 +61,36 @@ class BacklightMenu {
         const popup = new switchCtor()
         const name = popup.switchName
 
-        if (this.switches[name]) {
+        if (this.switches.has(name)) {
             throw new Error(`switch ${name} already defined`)
         }
 
         this.parent.menu!.addMenuItem(popup.popup)
-        this.switches[name] = popup
+        this.switches.set(name, popup)
+    }
+
+    private allSwitches(): IterableIterator<Switch> {
+        return this.switches.values()
     }
 
     updateStatus() {
-        const status = keyboardStatus(Object.keys(this.switches))
-        for (const sw in status) {
-            this.switches[sw]?.switch(status[sw])
+        const status = keyboardStatus(...this.switches.keys())
+        for (const sw of this.allSwitches()) {
+            sw.switch(status.get(sw.switchName) == 'on')
         }
     }
 
     switchAll(state: boolean) {
-        for (const name in this.switches) {
-            this.switches[name]?.switch(state)
+        for (const sw of this.allSwitches()) {
+            sw.switch(state)
         }
     }
 
     clear() {
-        for (const name in this.switches) {
-            this.switches[name]?.destroy()
+        for (const sw of this.allSwitches()) {
+            sw.destroy()
         }
-        this.switches = {}
+        this.switches.clear()
     }
 
     destroy() {
@@ -121,6 +124,7 @@ export class BacklightExtension {
         this.indicator.createSwitch(SwitchScroll)
         this.indicator.createSwitch(SwitchNum)
         this.indicator.switchAll(true)
+        this.indicator.updateStatus()
 
         this.indicator.addButton(this.prepareScroll, 'Reset Keymap', 'go-next')
     }

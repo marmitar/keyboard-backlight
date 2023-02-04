@@ -3,13 +3,6 @@ import { GLib } from './gjs/gi.js'
 type NonEmpty<T> = [T, ...T[]]
 
 /**
- * Converts `Uint8Array` to `String`.
- */
-function byteArrayToString(array: Uint8Array | null): string {
-    return String.fromCharCode(...array ?? [])
-}
-
-/**
  * Command line execution error.
  */
 class ExecError {
@@ -31,6 +24,11 @@ class ExecError {
 }
 
 /**
+ * Converts `Uint8Array` to `String`.
+ */
+const decoder = new TextDecoder('utf-8')
+
+/**
  * Call program with given arguments.
  */
 export function exec(...args: NonEmpty<string>) {
@@ -38,8 +36,8 @@ export function exec(...args: NonEmpty<string>) {
 
     const [ok, bufout, buferr, exitCode] = GLib.spawn_command_line_sync(cmd)
 
-    const stdout = byteArrayToString(bufout)
-    const stderr = byteArrayToString(buferr)
+    const stdout = decoder.decode(bufout ?? undefined)
+    const stderr = decoder.decode(buferr ?? undefined)
 
     if (!ok || exitCode !== 0) {
         // unsuccesfull execution

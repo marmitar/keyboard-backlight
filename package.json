@@ -20,7 +20,7 @@
         "@gi-types/meta": "^3.38",
         "@gi-types/shell": "^0.1",
         "@gi-types/st": "^1.0",
-        "typescript": "^4.8"
+        "typescript": "^5.0"
     },
     "devDependencies": {
         "json": "^11.0"

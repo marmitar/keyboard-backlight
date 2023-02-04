@@ -1,7 +1,6 @@
 import { PopupSwitchMenuItem } from './gjs/ui/popupMenu.js'
 import { exec } from './utils.js'
 
-
 type NonEmpty<T> = [T, ...T[]]
 
 type ExecArgs = {
@@ -14,8 +13,8 @@ export class Switch {
     readonly popup: PopupSwitchMenuItem
     readonly switchName: string
 
-    constructor(name: string, args?: ExecArgs) {
-        this.args = args ?? {}
+    constructor(name: string, args: ExecArgs = {}) {
+        this.args = args
         this.switchName = name
         this.popup = new PopupSwitchMenuItem(name, false, { reactive: true })
 
@@ -30,14 +29,17 @@ export class Switch {
         }
     }
 
-    switch(state?: boolean) {
-        if (state ?? !this.popup.state) {
-            this.run(this.args.on)
-            this.popup.setToggleState(true)
-        } else {
-            this.run(this.args.off)
-            this.popup.setToggleState(false)
-        }
+    private set(state: boolean) {
+        this.run(state ? this.args.on : this.args.off)
+        this.popup.setToggleState(state)
+    }
+
+    switch(state: boolean = !this.popup.state) {
+        this.set(state)
+    }
+
+    update(state: boolean = this.popup.state) {
+        this.set(state)
     }
 
     destroy() {
@@ -45,13 +47,13 @@ export class Switch {
     }
 }
 
-export function keyboardStatus<K extends string>(keys: K[]): Record<K, boolean | never> {
+export function keyboardStatus(...keys: string[]): Map<string, string | undefined> {
     const { stdout } = exec('/usr/bin/xset', 'q')
     const re = new RegExp(`(${keys.join('|')}):\\s+(on|off)`, 'g')
 
-    const matches: any = {}
+    const matches = new Map<string, string | undefined>()
     for (const [_, name, status] of stdout.matchAll(re)) {
-        matches[name as K] = (status == 'on')
+        matches.set(name ?? '', status)
     }
     return matches
 }
