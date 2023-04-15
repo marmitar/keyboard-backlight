@@ -1,53 +1,39 @@
-type Awaitable<T> = T | Promise<T>
-
-interface ExtensionLike {
-    enable(): Awaitable<void>
-    disable(): Awaitable<void>
-}
-
-class AsyncExtension {
-    private readonly errorQueue: unknown[] = []
-    private readonly extension?: Promise<ExtensionLike | undefined>
-
-    constructor(load: () => Promise<ExtensionLike>) {
-        this.extension = this.storingErrors(load)
-    }
-
-    private async storingErrors<T>(run: () => T): Promise<Awaited<T> | undefined> {
-        try {
-            return await run()
-        } catch (error) {
-            this.errorQueue.push(error)
-            return undefined
-        }
-    }
-
-    private runOrThrow(block: (extension: ExtensionLike) => Awaitable<void>) {
-        const error = this.errorQueue.pop()
-        if (error) {
-            throw error
-        }
-
-        this.storingErrors(async () => {
-            const extension = await this.extension
-            if (extension) {
-                await block(extension)
-            }
-        })
-    }
-
-    enable() {
-        this.runOrThrow((extension) => extension.enable())
-    }
-
-    disable() {
-        this.runOrThrow((extension) => extension.disable())
-    }
-}
+import type { Menu } from './menu.js'
 
 export function init(meta: typeof import('./metadata.json')) {
-    return new AsyncExtension(async () => {
-        const { BacklightExtension } = await import('./index.js')
-        return new BacklightExtension(meta)
-    })
+    // prefix used in exception logs
+    const [extesionTag] = meta.uuid.split('@')
+
+    function logException(exception: unknown) {
+        log(`${extesionTag}: ${exception}`)
+        if (exception instanceof Error) {
+            logError(exception, extesionTag)
+        }
+    }
+
+    // dynamic imports are the only way to use 'import' in GJS
+    const menuModule = import('./menu.js')
+    // if 'enable' is called more than once, we need to store all the menus here
+    const menus: Promise<Menu | void>[]  = []
+
+    function enable() {
+        log(`${meta.uuid}: enabling`)
+
+        const menu = menuModule
+            .then(({ addBacklightMenu }) => addBacklightMenu(meta.name, meta.uuid))
+            .catch(logException)
+
+        menus.push(menu)
+    }
+
+    function disable() {
+        log(`${meta.uuid}: disabling`)
+        // destroy all menus (should be a single menu here)
+        for (const promise of menus.splice(0)) {
+            promise.then((menu) => menu?.destroy())
+                .catch(logException)
+        }
+    }
+
+    return { enable, disable }
 }
