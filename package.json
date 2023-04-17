@@ -14,7 +14,8 @@
         "prepack": "npm run build",
         "pack": "npm run send",
         "presend": "npm run cleandir",
-        "send": "cp -r target $(npm run --silent path)"
+        "send": "cp -r target $(npm run --silent path)",
+        "docs": "npx typedoc"
     },
     "dependencies": {
         "@gi-types/clutter": "^7.0",
@@ -27,7 +28,8 @@
         "typescript": "^5.0"
     },
     "devDependencies": {
-        "json": "^11.0"
+        "json": "^11.0",
+        "typedoc": "^0.24"
     },
     "private": true
 }

@@ -33,4 +33,9 @@
         "strictFunctionTypes": true,
         "skipLibCheck": true,
     },
+    "typedocOptions": {
+        "entryPointStrategy": "expand",
+        "entryPoints": ["src/"],
+        "out": "docs",
+    },
 }
