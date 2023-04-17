@@ -2,15 +2,18 @@ import { St } from './gjs/gi.js'
 import main from './gjs/ui/main.js'
 import { Button } from './gjs/ui/panelMenu.js'
 
+import { once, type OnceCallback } from './callback/once.js'
+import { weak } from './callback/weak.js'
+import { KeyStatusReloader } from './keyboard/reloader.js'
+import { unwrap } from './utils/unwrap.js'
 
-/** Throws exception if `value` is `null` or `undefined`. */
-function unwrap<T>(value: T | null | undefined): NonNullable<T> {
-    if (value === null || value === undefined) {
-        throw new Error(`expected value here, but got ${value}`)
-    }
-    return value
-}
-
+/**
+ * Creates a button with an icon and inserts at the top bar.
+ *
+ * @param name The button name.
+ * @param uuid The extension UUID.
+ * @returns The newly created button.
+ */
 function createIndicatorButton(name: string, uuid: string): Button {
     const button = new Button(0.0, name, false)
 
@@ -22,30 +25,50 @@ function createIndicatorButton(name: string, uuid: string): Button {
     }))
     button.add_child(box)
 
-    // insert button with icon to top bar
+    // insert button with icon into the top bar
     const [role] = uuid.split('@')
     main.panel.addToStatusArea(unwrap(role), button)
 
     return button
 }
 
-export interface Menu {
-    destroy(): void
+/** Callback invoked when the menu change to its open state. */
+function reloadOnMenuOpen(this: KeyStatusReloader, _: unknown, open: unknown) {
+    if (open === true) {
+        this.reload()
+    }
 }
 
-export function addBacklightMenu(name: string, uuid: string): Menu {
+/** Represents the menu on the top bar. */
+export interface Menu {
+    /** Removes the menu and destroy associated resources. */
+    readonly destroy: OnceCallback<(this: void) => void>
+}
+
+/** Options for creating the menu. */
+export interface BacklightMenuOptions {
+    /** Extension UUID. */
+    readonly uuid: string
+    /** Extension name. */
+    readonly name: string
+}
+
+/**
+ * Creates a button on the top bar that opens a menu for interacting with the extension.
+ *
+ * @returns A reference to the menu so it can be removed.
+ */
+export function addBacklightMenu({ name, uuid }: BacklightMenuOptions): Menu {
     const button = createIndicatorButton(name, uuid)
     const menu = unwrap(button.menu)
 
-    menu.connect('open-state-changed', (_, open) => {
-        if (open) {
-            // TODO
-        }
-    })
+    const reloader = new KeyStatusReloader()
+    menu.connect('open-state-changed', weak(reloader, reloadOnMenuOpen));
 
     function destroy() {
+        reloader.destroy()
         button.destroy()
     }
 
-    return { destroy }
+    return { destroy: once(destroy) }
 }
