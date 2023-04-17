@@ -1,7 +1,7 @@
 import { GLib } from '../gjs/gi.js'
 
-import { once, OnceCallback } from '../callback/once.js'
-import { collected, Collected, weak } from '../callback/weak.js'
+import { once, type OnceCallback } from '../callback/once.js'
+import { collected, type Collected, weak } from '../callback/weak.js'
 
 /** A tag used by {@link GLib} to stop the interval afterwards. */
 type TimeoutTag = ReturnType<GLib['timeout_add']>

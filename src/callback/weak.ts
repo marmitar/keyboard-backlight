@@ -1,4 +1,4 @@
-import { once, OnceCallback, ReturnValueError } from './once.js'
+import { once, type OnceCallback, ReturnValueError } from './once.js'
 
 /**
  * Especial symbol to check if a {@link Once} callback was already called.
