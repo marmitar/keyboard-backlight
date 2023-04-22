@@ -6,6 +6,8 @@ import { weak } from './utils/weak.js'
 import { KeyStatusReloader } from './keyboard/reloader.js'
 import { unwrap } from './utils/nonnull.js'
 
+import { Node } from './node.js'
+
 /**
  * Creates a button with an icon and inserts at the top bar.
  *
@@ -70,7 +72,7 @@ export function addBacklightMenu({ name, uuid }: BacklightMenuOptions): Menu {
 
     function destroy() {
         reloader.clear()
-        button.destroy()
+        Node.destroy(button)
     }
 
     return { destroy }

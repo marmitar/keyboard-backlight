@@ -119,7 +119,7 @@ export class KeyStatusReloader {
     /** The callbacks listening to key updates. */
     private readonly callbacks = new Map<string, WeakCallbackSet>()
     /** Call {@link reload} in a regular interval. */
-    private readonly autoReloader = Interval.start(this, this.autoReaload, { seconds: 10 })
+    private readonly autoReloader = Interval.start(this, this.reload, { seconds: 10 })
     /** Callback used for {@link CallbackRef.reload}. */
     private readonly reloadCallback = weak(this, this.reload)
 
@@ -142,29 +142,22 @@ export class KeyStatusReloader {
      *
      * @returns The parsed keyboard status
      */
-    async reload(this: this): Promise<Status[]> {
-        this.assertAutoReloading()
-
-        const query = await XSet.query()
-        const currentStatus = Status.parse(query)
-        currentStatus.forEach((key) => {
-            this.callbacks.get(key.name)?.callEach(key)
-        })
-        return currentStatus
-    }
-
-    /**
-     * Try reloading the keyboard status and log any errors encountered in the process. Used to log errors in
-     * the auto reloader {@link Interval}.
-     */
-    private async autoReaload(this: this): Promise<void> {
+    async reload(this: this): Promise<Status[] | undefined> {
         try {
-            await this.reload()
+            this.assertAutoReloading()
+
+            const query = await XSet.query()
+            const currentStatus = Status.parse(query)
+            currentStatus.forEach((key) => {
+                this.callbacks.get(key.name)?.callEach(key)
+            })
+            return currentStatus
         } catch (error) {
             log(`${this.constructor.name}: ${error}`)
             if (error instanceof Error) {
                 logError(error, this.constructor.name)
             }
+            return undefined
         }
     }
 
