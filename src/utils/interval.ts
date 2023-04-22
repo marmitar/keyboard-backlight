@@ -116,8 +116,7 @@ export namespace Interval {
      * Repeatedly calls {@link callback} with {@link thisArg} as `this` parameter until {@link thisArg} is
      * garbage collected or the returned {@link Interval.cancel} is called.
      *
-     * @param thisArg Internal data passed to {@link callback} via `this` parameter. The data is stored in
-     *  a weak reference.
+     * @param thisArg Internal data passed to `callback` via `this` parameter. The data is stored in a weak reference.
      * @param callback The function to be called every interval.
      * @param opt Interval options.
      * @returns A {@link Interval} object, able to stop the interval later.

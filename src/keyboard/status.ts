@@ -78,8 +78,8 @@ export namespace Status {
     /**
      * Parse output from {@link XSet.query}.
      *
-     * @param text Output from {@link XSet.query}.
-     * @returns Parsed key statuses from {@link text}.
+     * @param text Output from `xset q`.
+     * @returns Parsed key statuses from `text`.
      */
     export function parse(text: string): Status[] {
         const data: Status[] = []

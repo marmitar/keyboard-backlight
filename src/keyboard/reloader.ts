@@ -174,11 +174,11 @@ export class KeyStatusReloader {
     }
 
     /**
-     * Inserts {@link callback} as a listener for updates on {@link key}.
+     * Inserts `callback` as a listener for updates on `key`.
      *
      * @param key To key being listened to.
-     * @param data Internal data for {@link cb} that should be weakly referenced.
-     * @param cb Listener to be called of updates of {@link key}.
+     * @param data Internal data for `cb` that should be weakly referenced.
+     * @param cb Listener to be called of updates of `key`.
      * @returns A reference to the newly inserted callback.
      */
     addCallback<Data extends object>(this: this, key: string, data: Data, cb: KeyStatusCallback<Data>): CallbackRef {
