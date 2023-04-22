@@ -2,9 +2,12 @@ import { St } from './gjs/gi.js'
 import main from './gjs/ui/main.js'
 import { Button } from './gjs/ui/panelMenu.js'
 
-import { weak } from './utils/weak.js'
-import { KeyStatusReloader } from './keyboard/reloader.js'
+import { Callbacks } from './utils/callbacks.js'
 import { unwrap } from './utils/nonnull.js'
+import { Objects } from './utils/objects.js'
+import { weak } from './utils/weak.js'
+
+import { KeyStatusReloader } from './keyboard/reloader.js'
 
 import { Node } from './node.js'
 
@@ -75,5 +78,12 @@ export function addBacklightMenu({ name, uuid }: BacklightMenuOptions): Menu {
         Node.destroy(button)
     }
 
-    return { destroy }
+    return Objects.create({
+        destroy: {
+            value: Callbacks.freeze(destroy, 'destroy BacklightMenu'),
+            enumerable: true,
+            configurable: false,
+            writable: false,
+        }
+    })
 }
