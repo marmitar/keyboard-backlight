@@ -17,12 +17,12 @@ export class UnwrapError extends Error {
 }
 
 /**
- * Returns {@link value} if it isn't `null` nor `undefined`. Useful where a {@link NonNullable} value is expected,
+ * Returns `value` if it isn't `null` nor `undefined`. Useful where a {@link NonNullable} value is expected,
  * but the type system can't prove the value isn't nullable.
  *
- * @param value A nullable value that shouldn't be `null` or `undefined`;
- * @returns {@link value}.
- * @throws {UnwrapError} if {@link value} is `null` or `undefined`.
+ * @param value A nullable value that isn't expected to be `null` or `undefined`.
+ * @returns The input `value` as non null.
+ * @throws {UnwrapError} if `value` is `null` or `undefined`.
  */
 export function unwrap<const T>(value: T | null | undefined): NonNullable<T> {
     if (value === null || value === undefined) {
