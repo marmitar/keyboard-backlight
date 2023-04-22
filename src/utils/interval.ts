@@ -136,7 +136,6 @@ export namespace Interval {
                 get: Callbacks.freeze(finished, `finished ${callback.name}`),
                 enumerable: true,
                 configurable: false,
-                writable: false,
             }
         })
     }

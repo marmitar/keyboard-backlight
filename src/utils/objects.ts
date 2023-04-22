@@ -4,24 +4,28 @@ export interface ReadOnlyPropertyDescriptor {
     readonly enumerable: boolean
     /** Read-only properties should be non-configurable. */
     readonly configurable: false
+}
+
+/** A read-only {@link PropertyDescriptor} with an assigned value. */
+export interface ReadOnlyDataProperty<T> extends ReadOnlyPropertyDescriptor {
+    /** The value for this property. */
+    readonly value: T
     /** Read-only properties must not be writeable. */
     readonly writable: false
 }
 
-/** A read-only {@link PropertyDescriptor} with an assigned value. */
-export interface ReadOnlyPropertyValue<T> extends ReadOnlyPropertyDescriptor {
-    /** The value for this property. */
-    readonly value: T
-}
-
 /** A read-only {@link PropertyDescriptor} with a getter method. */
-export interface ReadOnlyPropertyGetter<T> extends ReadOnlyPropertyDescriptor {
+export interface ReadOnlyAccessorProperty<T> extends ReadOnlyPropertyDescriptor {
     /** The getter for this property. */
     get(): T
+    /** Must not have a setter. */
+    readonly set?: never
+    /** The getter already prohibits write. */
+    readonly writable?: never
 }
 
 /** A read-only {@link PropertyDescriptor}. */
-export type ReadOnlyProperty<T> = ReadOnlyPropertyValue<T> | ReadOnlyPropertyGetter<T>
+export type ReadOnlyProperty<T> = ReadOnlyDataProperty<T> | ReadOnlyAccessorProperty<T>
 
 /** A read-only {@link PropertyDescriptorMap}. */
 export interface ReadOnlyPropertyDescriptorMap {

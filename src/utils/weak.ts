@@ -139,7 +139,6 @@ export function weak<This extends object, A extends any[], R>(
             get: Callbacks.freeze(isCollected, `collected ${callback.name}`),
             configurable: false,
             enumerable: false,
-            writable: false,
         },
         collect: {
             value: Callbacks.freeze(collect, `collect ${callback.name}`),
