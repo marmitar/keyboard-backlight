@@ -80,7 +80,7 @@ function communicate_utf8(proc: Subprocess): Promise<[stdout: string | null, std
  * @returns The contents captured in `STDOUT`.
  * @throws {ExecError} if the process ended with a non-zero exit status.
  */
-export async function exec(...command: Command): Promise<string> {
+export async function exec(...command: Command): Promise<string | null> {
     const proc = launcher.spawnv([...command])
     const [stdout, stderr] = await communicate_utf8(proc)
 
@@ -91,5 +91,5 @@ export async function exec(...command: Command): Promise<string> {
     if (stderr) {
         log(`${command.join(' ')}: ${stderr}`)
     }
-    return stdout ?? ''
+    return stdout
 }

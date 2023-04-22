@@ -1,4 +1,5 @@
 import { exec } from '../utils/exec.js'
+import { unwrap } from '../utils/nonnull.js'
 import { findInPath } from '../utils/path.js'
 
 /**
@@ -18,7 +19,7 @@ export namespace XSet {
      * @see https://man.archlinux.org/man/extra/xorg-xset/xset.1.en#q
      */
     export async function query(): Promise<string> {
-        return await exec(xset, 'q')
+        return unwrap(await exec(xset, 'q'))
     }
 
     /**

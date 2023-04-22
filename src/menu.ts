@@ -2,10 +2,9 @@ import { St } from './gjs/gi.js'
 import main from './gjs/ui/main.js'
 import { Button } from './gjs/ui/panelMenu.js'
 
-import { once, type OnceCallback } from './callback/once.js'
-import { weak } from './callback/weak.js'
+import { weak } from './utils/weak.js'
 import { KeyStatusReloader } from './keyboard/reloader.js'
-import { unwrap } from './utils/unwrap.js'
+import { unwrap } from './utils/nonnull.js'
 
 /**
  * Creates a button with an icon and inserts at the top bar.
@@ -42,7 +41,7 @@ function reloadOnMenuOpen(this: KeyStatusReloader, _: unknown, open: unknown) {
 /** Represents the menu on the top bar. */
 export interface Menu {
     /** Removes the menu and destroy associated resources. */
-    readonly destroy: OnceCallback<(this: void) => void>
+    readonly destroy: (this: void) => void
 }
 
 /** Options for creating the menu. */
@@ -65,10 +64,14 @@ export function addBacklightMenu({ name, uuid }: BacklightMenuOptions): Menu {
     const reloader = new KeyStatusReloader()
     menu.connect('open-state-changed', weak(reloader, reloadOnMenuOpen));
 
+    reloader.addCallback('Scroll Lock', button, ({ name, id, state }) => {
+        log(`Update: ${name} [${id}] = ${state}`)
+    })
+
     function destroy() {
-        reloader.destroy()
+        reloader.clear()
         button.destroy()
     }
 
-    return { destroy: once(destroy) }
+    return { destroy }
 }

@@ -1,4 +1,5 @@
-import { unwrap } from '../utils/unwrap.js'
+import { unwrap } from '../utils/nonnull.js'
+import { Objects } from '../utils/objects.js'
 
 import type { XSet } from './xset.js'
 
@@ -50,6 +51,30 @@ export interface Status {
 const STATUS_RE = /(?<id>\d+):\s+(?<name>(\w+\s+)*\w+):\s+(?<status>on|off)/g
 
 export namespace Status {
+    /** Creates a frozen {@link Status} object with a null prototype. */
+    function create(name: string, id: bigint, state: 'on' | 'off'): Status {
+        return Objects.create({
+            name: {
+                value: name,
+                enumerable: true,
+                writable: false,
+                configurable: false,
+            },
+            id: {
+                value: id,
+                enumerable: true,
+                writable: false,
+                configurable: false,
+            },
+            state: {
+                value: state,
+                enumerable: true,
+                writable: false,
+                configurable: false,
+            }
+        })
+    }
+
     /**
      * Parse output from {@link XSet.query}.
      *
@@ -60,13 +85,11 @@ export namespace Status {
         const data: Status[] = []
 
         for (const { groups } of text.matchAll(STATUS_RE)) {
-            const status: Status = {
-                name: normalizeWhitespace(unwrap(groups?.['name'])),
-                id: parseBigInt(unwrap(groups?.['id'])),
-                state: (unwrap(groups?.['status']) === 'on') ? 'on' : 'off'
-            }
+            const name = normalizeWhitespace(unwrap(groups?.['name']))
+            const id =  parseBigInt(unwrap(groups?.['id']))
+            const state = (unwrap(groups?.['status']) === 'on') ? 'on' : 'off'
 
-            data.push(status)
+            data.push(create(name, id, state))
         }
         return data
     }
