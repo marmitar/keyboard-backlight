@@ -1,4 +1,3 @@
-import { Callbacks } from './callbacks.js'
 import { Objects } from './objects.js'
 
 /** Especial symbol to check if a {@link WeakCallback} callback was already collected. */
@@ -23,7 +22,7 @@ class CallbackData<This extends object, A extends any[], R> {
         this.weakRef = new WeakRef(thisArg)
         this.callback = callback
         // make CallbackData final
-        Object.preventExtensions(this)
+        Object.seal(this)
     }
 
     /**
@@ -31,7 +30,7 @@ class CallbackData<This extends object, A extends any[], R> {
      * `callback`'s `this` parameter, deleting them from this `CallbackData` so they can be
      * garbage-collected later on.
      */
-    private dropReferences(this: this): void {
+    #dropReferences(this: this): void {
         delete this.weakRef
         delete this.callback
     }
@@ -43,7 +42,7 @@ class CallbackData<This extends object, A extends any[], R> {
      * If {@link collected} is returned, then both {@link weakRef} and {@link callback} are deleted, releasing their
      * strong references and enabling garbage collection on them too.
      */
-    private deref(this: this): { thisArg: This, callback: (this: This, ...params: A) => R } | collected {
+    #deref(this: this): { thisArg: This, callback: (this: This, ...params: A) => R } | collected {
         if (this.weakRef === undefined && this.callback === undefined) {
             return collected
         }
@@ -51,7 +50,7 @@ class CallbackData<This extends object, A extends any[], R> {
         const thisArg = this.weakRef?.deref()
         const callback = this.callback
         if (thisArg === undefined || callback === undefined) {
-            this.dropReferences()
+            this.#dropReferences()
             return collected
         }
         return { thisArg, callback }
@@ -62,7 +61,7 @@ class CallbackData<This extends object, A extends any[], R> {
      * Otherwise, drop all internal references and return {@link collected}.
      */
     call(this: this, ...params: A): R | collected {
-        const data = this.deref()
+        const data = this.#deref()
         if (data === collected) {
             return collected
         }
@@ -75,7 +74,7 @@ class CallbackData<This extends object, A extends any[], R> {
      * garbage-collected.
      */
     isCollected(this: this): boolean {
-        return this.deref() === collected
+        return this.#deref() === collected
     }
 
     /**
@@ -85,8 +84,8 @@ class CallbackData<This extends object, A extends any[], R> {
      *  released before.
      */
     collect(this: this): boolean {
-        const present = (this.deref() !== collected)
-        this.dropReferences()
+        const present = !this.isCollected()
+        this.#dropReferences()
         return present
     }
 }
@@ -116,6 +115,24 @@ export interface WeakCallback<F extends (...args: readonly any[]) => any> {
     readonly collect: (this: void) => boolean
 }
 
+
+/**
+ * Rename the provided function and {@link Object.freeze}s it.
+ *
+ * @param func Function to be renamed.
+ * @param name The new name for `func`.
+ * @returns The input function `func`, but frozen and with a new name.
+ */
+export function rename<const F extends (...args: any[]) => any>(func: F, name: string): F {
+    const renamed = Object.defineProperty(func, 'name', {
+        value: name,
+        writable: false,
+        enumerable: false,
+        configurable: true,
+    })
+    return Object.freeze(renamed)
+}
+
 /**
  * Creates a {@link WeakCallback} callback that holds `thisArg` via a weak reference.
  *
@@ -136,17 +153,17 @@ export function weak<This extends object, A extends any[], R>(
     // the weak callback is created here, but still needs renaming and freezing
     const weakCallback = Object.assign(call, Objects.create({
         [collected]: {
-            get: Callbacks.freeze(isCollected, `collected ${callback.name}`),
+            get: rename(isCollected, `collected ${callback.name}`),
             configurable: false,
             enumerable: false,
         },
         collect: {
-            value: Callbacks.freeze(collect, `collect ${callback.name}`),
+            value: rename(collect, `collect ${callback.name}`),
             configurable: false,
             enumerable: false,
             writable: false,
         }
     }))
 
-    return Callbacks.freeze(weakCallback, `weak ${callback.name}`)
+    return rename(weakCallback, `weak ${callback.name}`)
 }

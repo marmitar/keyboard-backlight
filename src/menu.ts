@@ -2,14 +2,13 @@ import { St } from './gjs/gi.js'
 import main from './gjs/ui/main.js'
 import { Button } from './gjs/ui/panelMenu.js'
 
-import { Callbacks } from './utils/callbacks.js'
 import { unwrap } from './utils/nonnull.js'
+import { Node } from './utils/node.js'
 import { Objects } from './utils/objects.js'
 import { weak } from './utils/weak.js'
 
 import { KeyStatusReloader } from './keyboard/reloader.js'
 
-import { Node } from './node.js'
 
 /**
  * Creates a button with an icon and inserts at the top bar.
@@ -78,12 +77,5 @@ export function addBacklightMenu({ name, uuid }: BacklightMenuOptions): Menu {
         Node.destroy(button)
     }
 
-    return Objects.create({
-        destroy: {
-            value: Callbacks.freeze(destroy, 'destroy BacklightMenu'),
-            enumerable: true,
-            configurable: false,
-            writable: false,
-        }
-    })
+    return { destroy }
 }
