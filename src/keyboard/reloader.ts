@@ -15,6 +15,31 @@ import { XSet } from './xset.js'
 export type KeyStatusCallback<Data = void> = (this: Data, keyStatus: Status) => void
 
 /**
+ * Creates a delete callback wrapping a weakly bound {@link Set.delete}, while ensuring the {@link WeakCallbackSet}
+ * instance isn't captured.
+ *
+ * @param deleteFromSet A weakly bound {@link WeakCallbackSet.delete} function.
+ * @returns A wrapper around `deleteFromSet` that returns `false` when the weak callback is collected.
+ */
+function makeDeleteCallback<T>(deleteFromSet: WeakCallback<(item: T) => boolean>): (this: T) => boolean {
+    /**
+     * Removes `this` from the {@link Set}.
+     *
+     * @returns Returns true if an element in the Set existed and has been removed, or false if the element does
+     *  not exist or the set has been collected.
+     */
+    function deleteCallback(this: T): boolean {
+        return deleteFromSet(this) === true
+    }
+    return deleteCallback
+}
+
+/** Focefully collects a {@link WeakCallback}. */
+function collectCallback<F extends (...args: readonly any[]) => any>(cb: WeakCallback<F>): void {
+    cb.collect()
+}
+
+/**
  * A {@link Set}-like collection of {@link WeakCallback}s, each with its own `this` data.
  */
 class WeakCallbackSet extends Set<WeakCallback<KeyStatusCallback>> {
@@ -24,30 +49,10 @@ class WeakCallbackSet extends Set<WeakCallback<KeyStatusCallback>> {
         Object.freeze(this)
     }
 
-    /**
-     * Creates a delete callback wrapping a weakly bound {@link Set.delete}, while ensuring the
-     * {@link WeakCallbackSet} instance isn't captured.
-     *
-     * @param deleteFromSet A weakly bound {@link WeakCallbackSet.delete} function.
-     * @returns A wrapper around `deleteFromSet` that returns `false` when the weak callback is collected.
-     */
-    private static makeDeleteCallback<T>(deleteFromSet: WeakCallback<(item: T) => boolean>): (this: T) => boolean {
-        /**
-         * Removes `this` from the {@link Set}.
-         *
-         * @returns Returns true if an element in the Set existed and has been removed, or false if the element does
-         *  not exist or the set has been collected.
-         */
-        function deleteCallback(this: T): boolean {
-            return deleteFromSet(this) === true
-        }
-        return deleteCallback
-    }
-
     /** Weakly bound version of {@link WeakCallbackSet.delete}. */
     private readonly boundDelete = weak(this, this.delete)
     /** Function to delete a callback from this set, but returning `false` isntead of {@link collected}. */
-    private readonly deleteCallback = WeakCallbackSet.makeDeleteCallback(this.boundDelete)
+    private readonly deleteCallback = makeDeleteCallback(this.boundDelete)
 
     /**
      * Creates a {@link WeakCallback} from `data` and `cb`, inserts it in the set and returns a function to remove
@@ -83,16 +88,11 @@ class WeakCallbackSet extends Set<WeakCallback<KeyStatusCallback>> {
         collectedCallbacks.forEach(this.boundDelete)
     }
 
-    /** Focefully collects a {@link WeakCallback}. */
-    private static collect(this: void, cb: WeakCallback<any>): void {
-        cb.collect()
-    }
-
     /**
      * Collects and remove all callbacks in this set.
      */
     override clear(this: this): void {
-        this.forEach(WeakCallbackSet.collect)
+        this.forEach(collectCallback)
         super.clear()
     }
 }
@@ -181,7 +181,7 @@ export class KeyStatusReloader {
      * @param cb Listener to be called of updates of `key`.
      * @returns A reference to the newly inserted callback.
      */
-    addCallback<Data extends object>(this: this, key: string, data: Data, cb: KeyStatusCallback<Data>): CallbackRef {
+    addListener<Data extends object>(this: this, key: string, data: Data, cb: KeyStatusCallback<Data>): CallbackRef {
         this.assertAutoReloading()
 
         const remove = this.get(key).emplace(data, cb)

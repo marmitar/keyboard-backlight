@@ -69,7 +69,7 @@ export function addBacklightMenu({ name, uuid }: BacklightMenuOptions): Menu {
     const reloader = new KeyStatusReloader()
     menu.connect('open-state-changed', weak(reloader, reloadOnMenuOpen));
 
-    reloader.addCallback('Scroll Lock', button, ({ name, id, state }) => {
+    reloader.addListener('Scroll Lock', button, ({ name, id, state }) => {
         log(`Update: ${name} [${id}] = ${state}`)
     })
 
