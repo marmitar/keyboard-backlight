@@ -16,7 +16,7 @@ export class Interval {
     private constructor({ seconds }: IntervalOptions, callback: WeakCallback<() => void>) {
         const millis = seconds * 1000
         this.#callback = callback
-        this.#id = GLib.timeout_add(GLib.PRIORITY_LOW, millis, () => this.#runUntilCollected())
+        this.#id = GLib.timeout_add(GLib.PRIORITY_HIGH_IDLE, millis, () => this.#runUntilCollected())
 
         Object.freeze(this)
     }
@@ -38,7 +38,7 @@ export class Interval {
         if (result === collected && this.finished) {
             return GLib.SOURCE_REMOVE
         } else {
-            return GLib.SOURCE_REMOVE
+            return GLib.SOURCE_CONTINUE
         }
     }
 
