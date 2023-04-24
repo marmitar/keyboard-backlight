@@ -1,51 +1,62 @@
 import { St } from './gjs/gi.js'
 import main from './gjs/ui/main.js'
 import { Button } from './gjs/ui/panelMenu.js'
+import type { PopupMenuBase } from './gjs/ui/popupMenu.js'
 
 import { unwrap } from './utils/nonnull.js'
 import { Node } from './utils/node.js'
-import { Objects } from './utils/objects.js'
 import { weak } from './utils/weak.js'
 
 import { KeyStatusReloader } from './keyboard/reloader.js'
+import { type Key, NumLock, ScrollLock } from './keyboard/keys.js'
 
+import { SwitchMenuItem } from './switch.js'
 
-/**
- * Creates a button with an icon and inserts at the top bar.
- *
- * @param name The button name.
- * @param uuid The extension UUID.
- * @returns The newly created button.
- */
-function createIndicatorButton(name: string, uuid: string): Button {
-    const button = new Button(0.0, name, false)
+/** The top-bar button and icon.s */
+class IndicatorButton {
+    readonly #id: string
+    readonly #button: Button
 
-    // create a boxed icon box for the button
-    const box = new St.BoxLayout()
-    box.add_actor(new St.Icon({
-        icon_name: 'system-run-symbolic',
-        style_class: 'system-status-icon'
-    }))
-    button.add_child(box)
+    /**
+     * @param name The button name.
+     * @param uuid The extension UUID.
+     */
+    constructor(name: string, uuid: string) {
+        this.#id = unwrap(uuid.split('@')[0])
 
-    // insert button with icon into the top bar
-    const [role] = uuid.split('@')
-    main.panel.addToStatusArea(unwrap(role), button)
+        this.#button = new Button(0.0, name, false)
+        this.#button.add_child(IndicatorButton.#boxedIcon())
 
-    return button
-}
-
-/** Callback invoked when the menu change to its open state. */
-function reloadOnMenuOpen(this: KeyStatusReloader, _: unknown, open: unknown) {
-    if (open === true) {
-        this.reload()
+        main.panel.addToStatusArea(this.#id, this.#button)
+        Object.freeze(this)
     }
-}
 
-/** Represents the menu on the top bar. */
-export interface Menu {
-    /** Removes the menu and destroy associated resources. */
-    readonly destroy: (this: void) => void
+    /** Access the menu opened by this button. */
+    get menu(): PopupMenuBase {
+        return unwrap(this.#button.menu)
+    }
+
+    /** Add a listener for when the menu was opened or closed. */
+    addMenuListener(this: this, callback: (this: void, _source: unknown, state: unknown) => void): void {
+        this.menu.connect('open-state-changed', callback)
+    }
+
+    /** Destroys the button and all of its children. */
+    destroy(this: this): void {
+        Node.destroy(this.#button)
+    }
+
+    /** Creates an icon for the button. */
+    static #boxedIcon(): InstanceType<St['BoxLayout']> {
+        const icon = new St.Icon({
+            icon_name: 'system-run-symbolic',
+            style_class: 'system-status-icon'
+        })
+
+        const box = new St.BoxLayout()
+        box.add_actor(icon)
+        return box
+    }
 }
 
 /** Options for creating the menu. */
@@ -56,26 +67,44 @@ export interface BacklightMenuOptions {
     readonly name: string
 }
 
-/**
- * Creates a button on the top bar that opens a menu for interacting with the extension.
- *
- * @returns A reference to the menu so it can be removed.
- */
-export function addBacklightMenu({ name, uuid }: BacklightMenuOptions): Menu {
-    const button = createIndicatorButton(name, uuid)
-    const menu = unwrap(button.menu)
+/** The menu, with the top panel button and its internal switches. */
+export class BacklightMenu {
+    readonly #reloader = new KeyStatusReloader({ seconds: 5 })
+    readonly #button: IndicatorButton
+    readonly #numLock: SwitchMenuItem<NumLock.Key>
+    readonly #scrollLock: SwitchMenuItem<ScrollLock.Key>
 
-    const reloader = new KeyStatusReloader()
-    menu.connect('open-state-changed', weak(reloader, reloadOnMenuOpen));
+    constructor({ name, uuid }: BacklightMenuOptions) {
+        this.#button = new IndicatorButton(name, uuid)
+        this.#button.addMenuListener(this.#reloadCallback)
 
-    reloader.addListener('Scroll Lock', button, ({ name, id, state }) => {
-        log(`Update: ${name} [${id}] = ${state}`)
-    })
+        this.#numLock = this.#addSwitch(NumLock.KEY)
+        this.#scrollLock = this.#addSwitch(ScrollLock.KEY)
 
-    function destroy() {
-        reloader.clear()
-        Node.destroy(button)
+        Object.freeze(this)
+        this.#reloader.reload()
     }
 
-    return { destroy }
+    #addSwitch<const S extends string>(this: this, key: Key<S>): SwitchMenuItem<S> {
+        return new SwitchMenuItem(key, this.#button.menu, this.#reloader)
+    }
+
+    readonly #reloadCallback = weak(this, this.#reloadOnOpen)
+
+    #reloadOnOpen(this: this, _: unknown, open: unknown): void {
+        if (open === true) {
+            this.#reloader.reload()
+        }
+    }
+
+    /** Destroys the menu and all of its resources. */
+    destroy(this: this): void {
+        this.#reloadCallback.collect()
+
+        this.#numLock.destroy()
+        this.#scrollLock.destroy()
+
+        this.#button.destroy()
+        this.#reloader.destroy()
+    }
 }
