@@ -1,7 +1,7 @@
 /** A {@link PropertyDescriptor} that describes a read-only property.  */
 export interface ReadOnlyPropertyDescriptor {
-    /** If this property shows up during enumeration of the properties on the corresponding object. */
-    readonly enumerable: boolean
+    /** Read-only properties are better of as enumerable. */
+    readonly enumerable: true
     /** Read-only properties should be non-configurable. */
     readonly configurable: false
 }

@@ -1,7 +1,7 @@
 import { unwrap } from '../utils/nonnull.js'
 import { Objects } from '../utils/objects.js'
 
-import type { XSet } from './xset.js'
+import { XSet } from './xset.js'
 
 /** Matches one or more whitespace characters. */
 const SPACE_RE = /\s+/g
@@ -81,16 +81,40 @@ export namespace Status {
      * @param text Output from `xset q`.
      * @returns Parsed key statuses from `text`.
      */
-    export function parse(text: string): Status[] {
-        const data: Status[] = []
-
+    function *parse(text: string): Iterable<Status> {
         for (const { groups } of text.matchAll(STATUS_RE)) {
             const name = normalizeWhitespace(unwrap(groups?.['name']))
             const id =  parseBigInt(unwrap(groups?.['id']))
             const state = (unwrap(groups?.['status']) === 'on') ? 'on' : 'off'
 
-            data.push(create(name, id, state))
+            yield create(name, id, state)
+        }
+    }
+
+    /**
+     * Query and parse key {@link Status} from {@link XSet.query}.
+     *
+     * @returns All the key parsed with their respective statues.
+     */
+    export async function queryAll(): Promise<Map<string, Status>> {
+        const data = new Map<string, Status>()
+        for (const status of parse(await XSet.query())) {
+            data.set(status.name, status)
         }
         return data
+    }
+
+    /**
+     * Query and parse a single key {@link Status} from {@link XSet.query}.
+     *
+     * @returns The key status, if found.
+     */
+    export async function query(key: string): Promise<Status | undefined> {
+        for (const status of parse(await XSet.query())) {
+            if (status.name === key) {
+                return status
+            }
+        }
+        return undefined
     }
 }

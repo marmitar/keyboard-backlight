@@ -21,8 +21,6 @@ class CallbackData<This extends object, A extends any[], R> {
     constructor(thisArg: This, callback: (this: This, ...params: A) => R) {
         this.weakRef = new WeakRef(thisArg)
         this.callback = callback
-        // make CallbackData final
-        Object.seal(this)
     }
 
     /**
@@ -155,12 +153,12 @@ export function weak<This extends object, A extends any[], R>(
         [collected]: {
             get: rename(isCollected, `collected ${callback.name}`),
             configurable: false,
-            enumerable: false,
+            enumerable: true,
         },
         collect: {
             value: rename(collect, `collect ${callback.name}`),
             configurable: false,
-            enumerable: false,
+            enumerable: true,
             writable: false,
         }
     }))

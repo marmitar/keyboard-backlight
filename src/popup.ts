@@ -1,7 +1,5 @@
 import { PopupSwitchMenuItem, type PopupMenuBase } from './gjs/ui/popupMenu.js'
 
-import { Node } from './utils/node.js'
-
 /** A {@link PopupSwitchMenuItem} with type-safe, weakly bound listeners. */
 export class PopupSwitch {
     /** The wrapped {@link PopupSwitchMenuItem}. */
@@ -43,18 +41,18 @@ export class PopupSwitch {
      *
      * @param callback Listener callabck.
      */
-    addListener(this: this, callback: (this: void, state: boolean) => void): void {
-        const id = this.#popup.connect('toggled', (_, state) => {
-            callback(Boolean(state))
-        })
+    addListener(this: this, callback: (this: void) => void): void {
+        const id = this.#popup.connect('toggled', callback)
         this.#callbackIds.push(id)
     }
 
     /**
-     * Destroys the popup element.
+     * Removes all the popup callbacks.
      */
     destroy(this: this): void {
-        this.#callbackIds.forEach((id) => this.#popup.disconnect(id))
-        Node.destroy(this.#popup)
+        this.#callbackIds.forEach((id) => {
+            log(`${this.constructor.name} ~ ${this.#popup.get_name()}: Disconnecting ID ${id}`)
+            this.#popup.disconnect(id)
+        })
     }
 }

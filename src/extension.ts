@@ -1,4 +1,8 @@
-import type { Menu } from './menu.js'
+import type { BacklightMenu } from './menu.js'
+
+export interface ExtensionUtils {
+    readonly metadata: Readonly<typeof import('./metadata.json')>
+}
 
 /** Represents an extension that can be enabled or disabled by the GNOME Shell. */
 export interface Extension {
@@ -9,9 +13,9 @@ export interface Extension {
 }
 
 /** Prepare the extension to be loaded. The extension is only enabled after a call to {@link Extension.enable}. */
-export function init(meta: typeof import('./metadata.json')): Extension {
+export function init({ metadata }: ExtensionUtils): Extension {
     // prefix used in exception logs
-    const [extesionTag] = meta.uuid.split('@')
+    const [extesionTag] = metadata.uuid.split('@')
 
     /** This function is used only for logging errors in the extension Promises. */
     function logException(exception: unknown) {
@@ -25,7 +29,7 @@ export function init(meta: typeof import('./metadata.json')): Extension {
     // dynamic imports are the only way to use 'import' in GJS
     const menuModule = import('./menu.js')
     // if 'enable' is called more than once, we need to store all the menus here
-    const menus: Promise<Menu | void>[]  = []
+    const menus: Promise<BacklightMenu | void>[]  = []
 
     /**
      * GJS expects this to be synchronous, but this function has to be async (via promises) because of the
@@ -33,17 +37,17 @@ export function init(meta: typeof import('./metadata.json')): Extension {
      * every modern JS system uses ES6 modules.
      */
     function enable() {
-        log(`Enabling ${meta.uuid}`)
+        log(`Enabling ${metadata.uuid}`)
 
         const menu = menuModule
-            .then(({ addBacklightMenu }) => addBacklightMenu(meta))
+            .then(({ BacklightMenu }) => new BacklightMenu(metadata))
             .catch(logException)
 
         menus.push(menu)
     }
 
     function disable() {
-        log(`Disabling ${meta.uuid}`)
+        log(`Disabling ${metadata.uuid}`)
         // should be a single menu here, but its better to be safe than sorry
         for (const promise of menus.splice(0)) {
             promise.then((menu) => menu?.destroy())

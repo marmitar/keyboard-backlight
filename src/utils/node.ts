@@ -56,13 +56,12 @@ export namespace Node {
      */
     export function destroy(node: Node): void {
         assertNotDestroyed(node)
-        makeOrphan(node)
-
         const children = clone(node.get_children())
         children.forEach(destroy)
 
         // the node could have been destroyed as one of its children if a cycle is (wrongly) present
         assertNotDestroyed(node)
+        makeOrphan(node)
         node.destroy()
         DESTROYED.add(node)
     }
