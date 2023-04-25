@@ -11,6 +11,7 @@ import { KeyStatusReloader } from './keyboard/reloader.js'
 import { type Key, NumLock, ScrollLock } from './keyboard/keys.js'
 
 import { SwitchMenuItem } from './switch.js'
+import { ResetScrollLockItem } from './reset.js'
 
 /** The top-bar button and icon.s */
 class IndicatorButton {
@@ -73,6 +74,7 @@ export class BacklightMenu {
     readonly #button: IndicatorButton
     readonly #numLock: SwitchMenuItem<NumLock.Key>
     readonly #scrollLock: SwitchMenuItem<ScrollLock.Key>
+    readonly #resetKeymap: ResetScrollLockItem
 
     constructor({ name, uuid }: BacklightMenuOptions) {
         this.#button = new IndicatorButton(name, uuid)
@@ -80,6 +82,7 @@ export class BacklightMenu {
 
         this.#numLock = this.#addSwitch(NumLock.KEY)
         this.#scrollLock = this.#addSwitch(ScrollLock.KEY)
+        this.#resetKeymap = new ResetScrollLockItem(this.#button.menu)
 
         Object.freeze(this)
         this.#reloader.reload()
@@ -103,6 +106,7 @@ export class BacklightMenu {
 
         this.#numLock.destroy()
         this.#scrollLock.destroy()
+        this.#resetKeymap.destroy()
 
         this.#button.destroy()
         this.#reloader.destroy()

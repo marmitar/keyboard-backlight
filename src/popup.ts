@@ -19,12 +19,8 @@ export class PopupSwitch {
     /**
      * Inserts this switch in a {@link PopupMenuBase}.
      */
-    addTo(this: this, menu: PopupMenuBase, position?: number): void {
-        if (typeof position === 'number') {
-            menu.addMenuItem(this.#popup, position)
-        } else {
-            menu.addMenuItem(this.#popup)
-        }
+    addTo(this: this, menu: PopupMenuBase): void {
+        menu.addMenuItem(this.#popup)
     }
 
     /** The current switch state. */

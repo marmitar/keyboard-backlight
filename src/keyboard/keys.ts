@@ -1,8 +1,7 @@
-import { exec } from '../utils/exec.js'
 import { Objects } from '../utils/objects.js'
-import { findInPath } from '../utils/path.js'
 
 import { NumLockX } from './numlockx.js'
+import { XModMap } from './xmodmap.js'
 import { XSet } from './xset.js'
 
 /** An object that controls a key in keyboard. */
@@ -66,6 +65,27 @@ export namespace NumLock {
     export const KEY = createKey({ name, turnOn, turnOff })
 }
 
+/** Wraps a function to run a single time. */
+class Once {
+    #body: (() => Promise<void>) | undefined
+
+    /**
+     * @param body The function that must run only once.
+     */
+    constructor(body: (this: void) => Promise<void>) {
+        this.#body = body
+    }
+
+    /** Run the wrapped function the first time it is called. */
+    run(this: this): void | Promise<void> {
+        if (this.#body) {
+            const promise = this.#body()
+            this.#body = undefined
+            return promise
+        }
+    }
+}
+
 /** Controls the `Scroll Lock` key.  */
 export namespace ScrollLock {
     const name = 'Scroll Lock'
@@ -73,33 +93,18 @@ export namespace ScrollLock {
     /** The key name in {@link XSet}. */
     export type Key = typeof name
 
-    /** Utility for modifying keymaps. */
-    const xmodmap = findInPath('xmodmap')
-    const xmodmapped = { modified: false }
-
-    /** Sets the Scroll Lock key as modifyable, but only once. */
-    async function prepareScrollLock(): Promise<void> {
-        if (xmodmapped.modified) {
-            return
-        }
-        xmodmapped.modified = true
-        try {
-            await exec(xmodmap, '-e', 'add mod3 = Scroll_Lock')
-        } catch (exception) {
-            xmodmapped.modified = false
-            throw exception
-        }
-    }
+    /** Is required only a single run, most of the time. */
+    const prepareScrollLock = new Once(XModMap.prepareScrollLock)
 
     /** Turns on the `Scroll Lock` key. */
     async function turnOn(): Promise<void> {
-        await prepareScrollLock()
+        await prepareScrollLock.run()
         await XSet.on(name)
     }
 
     /** Turns off the `Scroll Lock` key. */
     async function turnOff(): Promise<void> {
-        await prepareScrollLock()
+        await prepareScrollLock.run()
         await XSet.off(name)
     }
 
