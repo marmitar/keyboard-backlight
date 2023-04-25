@@ -89,7 +89,7 @@ export class KeyStateCouldNotBeChangedError extends Error {
     }
 
     override toString(this: this): string {
-        return `${this.constructor.name}(key=${this.key}, targetState=${this.targetState})`
+        return `${this.constructor.name}(key="${this.key}", targetState=${this.targetState})`
     }
 }
 

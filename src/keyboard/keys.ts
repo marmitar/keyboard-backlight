@@ -75,10 +75,20 @@ export namespace ScrollLock {
 
     /** Utility for modifying keymaps. */
     const xmodmap = findInPath('xmodmap')
+    const xmodmapped = { modified: false }
 
-    /** Sets the Scroll Lock key as modifyable. */
+    /** Sets the Scroll Lock key as modifyable, but only once. */
     async function prepareScrollLock(): Promise<void> {
-        await exec(xmodmap, '-e', 'add mod3 = Scroll_Lock')
+        if (xmodmapped.modified) {
+            return
+        }
+        xmodmapped.modified = true
+        try {
+            await exec(xmodmap, '-e', 'add mod3 = Scroll_Lock')
+        } catch (exception) {
+            xmodmapped.modified = false
+            throw exception
+        }
     }
 
     /** Turns on the `Scroll Lock` key. */
