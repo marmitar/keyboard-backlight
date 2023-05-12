@@ -1,5 +1,21 @@
 import type { BacklightMenu } from './menu.js'
 
+declare namespace imports {
+    namespace gi {
+        const GLib: typeof import('@gi-types/glib')
+    }
+}
+
+/** A promise that resolves after GNOME Shell has been safely initialized. */
+const initialized = new Promise<void>((resolve) => {
+    const { GLib } = imports.gi
+
+    GLib.timeout_add(GLib.PRIORITY_HIGH, 0, () => {
+        resolve()
+        return GLib.SOURCE_REMOVE
+    })
+})
+
 export interface ExtensionUtils {
     readonly metadata: Readonly<typeof import('./metadata.json')>
 }
@@ -27,7 +43,7 @@ export function init({ metadata }: ExtensionUtils): Extension {
     }
 
     // dynamic imports are the only way to use 'import' in GJS
-    const menuModule = import('./menu.js')
+    const menuModule = initialized.then(() => import('./menu.js'))
     // if 'enable' is called more than once, we need to store all the menus here
     const menus: Promise<BacklightMenu | void>[]  = []
 
