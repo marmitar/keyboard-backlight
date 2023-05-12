@@ -1,6 +1,6 @@
-import { GLib } from '../gjs/gi.js'
+import { GLib } from '../../gjs/gi.js'
 
-import { collected, weak, type WeakCallback } from './weak.js'
+import { collected, weak, type WeakCallback } from '../types/weak.js'
 
 /** Options for {@link Interval.start}. */
 export interface IntervalOptions {

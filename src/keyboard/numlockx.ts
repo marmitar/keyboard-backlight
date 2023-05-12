@@ -1,5 +1,5 @@
-import { exec } from '../utils/exec.js'
-import { findInPath } from '../utils/path.js'
+import { exec } from '../utils/system/exec.js'
+import { findInPath } from '../utils/system/path.js'
 
 /**
  * Wrapper for the `numlockx` utility.

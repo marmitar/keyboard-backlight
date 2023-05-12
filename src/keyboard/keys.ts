@@ -1,4 +1,4 @@
-import { Objects } from '../utils/objects.js'
+import { Objects } from '../utils/types/objects.js'
 
 import { NumLockX } from './numlockx.js'
 import { XModMap } from './xmodmap.js'

@@ -1,4 +1,4 @@
-import { Interval, type IntervalOptions } from '../utils/interval.js'
+import { Interval, type IntervalOptions } from '../utils/time/interval.js'
 
 import { Status } from './status.js'
 

@@ -1,4 +1,4 @@
-import { GLib } from '../gjs/gi.js'
+import { GLib } from '../../gjs/gi.js'
 
 /** Represents a program that could not be found in `PATH`. */
 export class PathError extends Error {

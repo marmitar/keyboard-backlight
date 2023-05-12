@@ -1,6 +1,6 @@
 import type { PopupMenuBase } from './gjs/ui/popupMenu.js'
 
-import { weak } from './utils/weak.js'
+import { weak } from './utils/types/weak.js'
 
 import type { Key } from './keyboard/keys.js'
 import type { KeyStatusReloader } from './keyboard/reloader.js'

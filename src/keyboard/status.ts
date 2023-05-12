@@ -1,5 +1,5 @@
-import { unwrap } from '../utils/nonnull.js'
-import { Objects } from '../utils/objects.js'
+import { unwrap } from '../utils/types/nonnull.js'
+import { Objects } from '../utils/types/objects.js'
 
 import { XSet } from './xset.js'
 

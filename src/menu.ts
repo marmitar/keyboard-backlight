@@ -3,9 +3,9 @@ import main from './gjs/ui/main.js'
 import { Button } from './gjs/ui/panelMenu.js'
 import type { PopupMenuBase } from './gjs/ui/popupMenu.js'
 
-import { unwrap } from './utils/nonnull.js'
 import { Node } from './utils/node.js'
-import { weak } from './utils/weak.js'
+import { unwrap } from './utils/types/nonnull.js'
+import { weak } from './utils/types/weak.js'
 
 import { KeyStatusReloader } from './keyboard/reloader.js'
 import { type Key, NumLock, ScrollLock } from './keyboard/keys.js'

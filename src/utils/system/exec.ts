@@ -1,4 +1,4 @@
-import { Gio } from '../gjs/gi.js'
+import { Gio } from '../../gjs/gi.js'
 import type { Subprocess } from '@gi-types/gio'
 
 /** Represents a command line to be invoked. */
