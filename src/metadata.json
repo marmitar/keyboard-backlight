@@ -3,6 +3,6 @@
     "name": "Keyboard Backlight",
     "description": "Extensions for keyboard backlight control.",
     "version": 2,
-    "shell-version": [ "43" ],
+    "shell-version": [ "43", "44" ],
     "url": "https://gitlab.com/tiagodepalves/keyboard-backlight"
 }
