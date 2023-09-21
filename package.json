@@ -2,7 +2,8 @@
     "name": "keyboard-backlight",
     "displayName": "Keyboard Backlight",
     "homepage": "https://gitlab.com/tiagodepalves/keyboard-backlight",
-    "version": "2.2",
+    "version": "2.2.1",
+    "private": true,
     "scripts": {
         "uuid": "npx json -f src/metadata.json uuid",
         "path": "echo ~/.local/share/gnome-shell/extensions/$(npm run --silent uuid)",
@@ -25,11 +26,10 @@
         "@gi-types/meta": "^3.38",
         "@gi-types/shell": "^0.1",
         "@gi-types/st": "^1.0",
-        "typescript": "^5.0"
+        "typescript": "^5.2"
     },
     "devDependencies": {
         "json": "^11.0",
-        "typedoc": "^0.24"
-    },
-    "private": true
+        "typedoc": "^0.25"
+    }
 }
