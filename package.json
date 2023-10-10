@@ -2,7 +2,7 @@
     "name": "keyboard-backlight",
     "displayName": "Keyboard Backlight",
     "homepage": "https://gitlab.com/tiagodepalves/keyboard-backlight",
-    "version": "2.2.1",
+    "version": "2.3.0",
     "private": true,
     "scripts": {
         "uuid": "npx json -f src/metadata.json uuid",
