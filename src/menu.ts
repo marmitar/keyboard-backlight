@@ -3,7 +3,7 @@ import * as main from 'resource:///org/gnome/shell/ui/main.js'
 import { Button } from 'resource:///org/gnome/shell/ui/panelMenu.js'
 import type { PopupMenuBase } from 'resource:///org/gnome/shell/ui/popupMenu.js'
 
-import { Node } from './utils/node.js'
+import { destroySubTree } from './utils/gobject.js'
 import { unwrap } from './utils/types/nonnull.js'
 import { weak } from './utils/types/weak.js'
 
@@ -44,7 +44,7 @@ class IndicatorButton {
 
     /** Destroys the button and all of its children. */
     destroy(this: this): void {
-        Node.destroy(this.#button)
+        destroySubTree(this.#button)
     }
 
     /** Creates an icon for the button. */
