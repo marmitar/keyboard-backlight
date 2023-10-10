@@ -1,4 +1,4 @@
-import type * as St from '@gi-types/st'
+import type St from 'gi://St'
 import type { Registered } from '../register'
 import type { PopupMenuBase } from './popupMenu'
 

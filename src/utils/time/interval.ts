@@ -1,17 +1,17 @@
-import { GLib } from '../../gjs/gi.js'
+import GLib from 'gi://GLib'
 
 import { collected, weak, type WeakCallback } from '../types/weak.js'
 
 /** Options for {@link Interval.start}. */
 export interface IntervalOptions {
     /** The interval time in seconds. */
-    seconds: number
+    readonly seconds: number
 }
 
 /** Represents a Interval started by {@link Interval.start}. */
 export class Interval {
     readonly #callback: WeakCallback<() => unknown>
-    readonly #id: ReturnType<GLib['timeout_add']>
+    readonly #id: ReturnType<typeof GLib.timeout_add>
 
     private constructor({ seconds }: IntervalOptions, callback: WeakCallback<() => void>) {
         const millis = seconds * 1000

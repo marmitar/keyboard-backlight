@@ -1,8 +1,8 @@
-import type * as Clutter from '@gi-types/clutter'
-import type * as Gio from '@gi-types/gio'
-import type * as Meta from '@gi-types/meta'
-import type * as Shell from '@gi-types/shell'
-import type * as St from '@gi-types/st'
+import type Clutter from 'gi://Clutter'
+import type Gio from 'gi://Gio'
+import type Meta from 'gi://Meta'
+import type Shell from 'gi://Shell'
+import type St from 'gi://St'
 import type { Registered } from '../register'
 import type { Button } from './panelMenu'
 

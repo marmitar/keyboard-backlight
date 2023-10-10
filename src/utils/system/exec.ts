@@ -1,5 +1,4 @@
-import { Gio } from '../../gjs/gi.js'
-import type { Subprocess } from '@gi-types/gio'
+import Gio from 'gi://Gio'
 
 /** Represents a command line to be invoked. */
 export type Command = readonly [program: string, ...args: readonly string[]]
@@ -7,7 +6,7 @@ export type Command = readonly [program: string, ...args: readonly string[]]
 /** Represents a unsuccessful invocation of an external program. */
 export class ExecError extends Error {
     /** The results of the invoked process. */
-    readonly proc: Subprocess
+    readonly proc: Gio.Subprocess
     /** The command used to start the process. */
     readonly command: Command
     /** The normal output of the program. */
@@ -30,7 +29,7 @@ export class ExecError extends Error {
      * @param stdout The normal output of the program.
      * @param stderr The error output of the program.
      */
-    constructor(proc: Subprocess, command: Command, stdout: string | null, stderr: string | null) {
+    constructor(proc: Gio.Subprocess, command: Command, stdout: string | null, stderr: string | null) {
         super(`process '${command.join(' ')}' exited with status ${proc.get_exit_status()}`)
         this.proc = proc
         this.command = command
@@ -55,12 +54,12 @@ const launcher = new Gio.SubprocessLauncher({
 })
 
 /**
- * Promisified version of {@link Subprocess.communicate_utf8_async}.
+ * Promisified version of {@link Gio.Subprocess.communicate_utf8_async}.
  *
  * @param proc The spawned process.
  * @returns A promise that resolves with {@link proc}'s `STDOUT` and `STDERR`.
  */
-function communicate_utf8(proc: Subprocess): Promise<[stdout: string | null, stderr: string | null]> {
+function communicate_utf8(proc: Gio.Subprocess): Promise<[stdout: string | null, stderr: string | null]> {
     return new Promise((resolve, reject) => {
         proc.communicate_utf8_async(null, null, (_, result) => {
             try {

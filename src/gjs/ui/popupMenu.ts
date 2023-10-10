@@ -1,6 +1,6 @@
-import type * as Clutter from '@gi-types/clutter'
-import type * as Gio from '@gi-types/gio'
-import type * as St from '@gi-types/st'
+import type Clutter from 'gi://Clutter'
+import type Gio from 'gi://Gio'
+import type St from 'gi://St'
 import type { BooleanProps, Registered } from '../register'
 
 declare namespace st {

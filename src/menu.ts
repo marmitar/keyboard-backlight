@@ -1,4 +1,5 @@
-import { St } from './gjs/gi.js'
+import St from 'gi://St'
+
 import main from './gjs/ui/main.js'
 import { Button } from './gjs/ui/panelMenu.js'
 import type { PopupMenuBase } from './gjs/ui/popupMenu.js'
@@ -48,7 +49,7 @@ class IndicatorButton {
     }
 
     /** Creates an icon for the button. */
-    static #boxedIcon(): InstanceType<St['BoxLayout']> {
+    static #boxedIcon(): St.BoxLayout {
         const icon = new St.Icon({
             icon_name: 'system-run-symbolic',
             style_class: 'system-status-icon'
