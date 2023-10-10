@@ -24,7 +24,7 @@
         "allowSyntheticDefaultImports": true,
         "esModuleInterop": false,
         "forceConsistentCasingInFileNames": true,
-        "moduleResolution": "Bundler",
+        "moduleResolution": "Node",
         "resolveJsonModule": true,
         "pretty": true,
         "sourceMap": false,

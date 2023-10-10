@@ -49,6 +49,16 @@ declare module 'gi://St' {
     export * from '@gi-types/st'
 }
 
+declare module 'resource:///org/gnome/shell/extensions/extension.js' {
+    export type ExtensionMetadata = Readonly<typeof import('./metadata.json')>
+
+    export abstract class Extension {
+        constructor(readonly metadata: ExtensionMetadata)
+        abstract enable(this: this): void
+        abstract disable(this: this): void
+    }
+}
+
 declare module 'resource:///org/gnome/shell/ui/main.js' {
     import type { Panel } from 'resource:///org/gnome/shell/ui/panel.js'
     import Clutter from 'gi://Clutter'

@@ -1,75 +1,22 @@
-import type { BacklightMenu } from './menu.js'
+import { Extension } from 'resource:///org/gnome/shell/extensions/extension.js'
+import { BacklightMenu } from './menu.js'
 
-declare namespace imports {
-    namespace gi {
-        const GLib: typeof import('@gi-types/glib')
-    }
-}
+export default class BacklightExtension extends Extension {
+    #menu: BacklightMenu | undefined
 
-/** A promise that resolves after GNOME Shell has been safely initialized. */
-const initialized = new Promise<void>((resolve) => {
-    const { GLib } = imports.gi
+    override enable(this: this) {
+        log(`Enabling ${this.metadata.uuid}`)
 
-    GLib.timeout_add(GLib.PRIORITY_HIGH, 0, () => {
-        resolve()
-        return GLib.SOURCE_REMOVE
-    })
-})
+        this.#menu?.destroy()
+        this.#menu = undefined
 
-export interface ExtensionUtils {
-    readonly metadata: Readonly<typeof import('./metadata.json')>
-}
-
-/** Represents an extension that can be enabled or disabled by the GNOME Shell. */
-export interface Extension {
-    /** Creates UI elements and acquire resource for the extension. */
-    readonly enable: (this: void) => void
-    /** Remove the extension from UI and release resources. */
-    readonly disable: (this: void) => void
-}
-
-/** Prepare the extension to be loaded. The extension is only enabled after a call to {@link Extension.enable}. */
-export function init({ metadata }: ExtensionUtils): Extension {
-    // prefix used in exception logs
-    const [extesionTag] = metadata.uuid.split('@')
-
-    /** This function is used only for logging errors in the extension Promises. */
-    function logException(exception: unknown) {
-        log(`${extesionTag}: ${exception}`)
-        // for actual errors, also log with backtrace
-        if (exception instanceof Error) {
-            logError(exception, extesionTag)
-        }
+        this.#menu = new BacklightMenu(this.metadata)
     }
 
-    // dynamic imports are the only way to use 'import' in GJS
-    const menuModule = initialized.then(() => import('./menu.js'))
-    // if 'enable' is called more than once, we need to store all the menus here
-    const menus: Promise<BacklightMenu | void>[]  = []
+    override disable(this: this) {
+        log(`Disabling ${this.metadata.uuid}`)
 
-    /**
-     * GJS expects this to be synchronous, but this function has to be async (via promises) because of the
-     * dynamic import in {@link menuModule}. Otherwise, we would need to use GNOME's `imports` object, while
-     * every modern JS system uses ES6 modules.
-     */
-    function enable() {
-        log(`Enabling ${metadata.uuid}`)
-
-        const menu = menuModule
-            .then(({ BacklightMenu }) => new BacklightMenu(metadata))
-            .catch(logException)
-
-        menus.push(menu)
+        this.#menu?.destroy()
+        this.#menu = undefined
     }
-
-    function disable() {
-        log(`Disabling ${metadata.uuid}`)
-        // should be a single menu here, but its better to be safe than sorry
-        for (const promise of menus.splice(0)) {
-            promise.then((menu) => menu?.destroy())
-                .catch(logException)
-        }
-    }
-
-    return { enable, disable }
 }
