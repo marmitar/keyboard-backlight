@@ -1,4 +1,4 @@
-import { PopupSwitchMenuItem, type PopupMenuBase } from './gjs/ui/popupMenu.js'
+import { PopupSwitchMenuItem, type PopupMenuBase } from 'resource:///org/gnome/shell/ui/popupMenu.js'
 
 /** A {@link PopupSwitchMenuItem} with type-safe, weakly bound listeners. */
 export class PopupSwitch {

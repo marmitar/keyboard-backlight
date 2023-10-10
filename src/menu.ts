@@ -1,8 +1,7 @@
 import St from 'gi://St'
-
-import main from './gjs/ui/main.js'
-import { Button } from './gjs/ui/panelMenu.js'
-import type { PopupMenuBase } from './gjs/ui/popupMenu.js'
+import * as main from 'resource:///org/gnome/shell/ui/main.js'
+import { Button } from 'resource:///org/gnome/shell/ui/panelMenu.js'
+import type { PopupMenuBase } from 'resource:///org/gnome/shell/ui/popupMenu.js'
 
 import { Node } from './utils/node.js'
 import { unwrap } from './utils/types/nonnull.js'

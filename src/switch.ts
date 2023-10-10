@@ -1,4 +1,4 @@
-import type { PopupMenuBase } from './gjs/ui/popupMenu.js'
+import type { PopupMenuBase } from 'resource:///org/gnome/shell/ui/popupMenu.js'
 
 import { weak } from './utils/types/weak.js'
 

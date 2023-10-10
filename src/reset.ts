@@ -1,4 +1,4 @@
-import { PopupImageMenuItem, type PopupMenuBase } from './gjs/ui/popupMenu.js'
+import { PopupImageMenuItem, type PopupMenuBase } from 'resource:///org/gnome/shell/ui/popupMenu.js'
 
 import { XModMap } from './keyboard/xmodmap.js'
 
