@@ -23,6 +23,7 @@
         "docs": "npx typedoc"
     },
     "dependencies": {
+        "@tsconfig/node10": "1.0.9",
         "@gi-types/clutter": "^7.0",
         "@gi-types/gio": "^2.66",
         "@gi-types/glib": "^2.66",
