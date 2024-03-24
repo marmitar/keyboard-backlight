@@ -55,7 +55,7 @@ class IndicatorButton {
         })
 
         const box = new St.BoxLayout()
-        box.add_actor(icon)
+        box.add_child(icon)
         return box
     }
 }
