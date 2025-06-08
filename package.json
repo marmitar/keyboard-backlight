@@ -2,6 +2,7 @@
     "name": "keyboard-backlight",
     "displayName": "Keyboard Backlight",
     "homepage": "https://gitlab.com/tiagodepalves/keyboard-backlight",
+    "license": "AGPL-3.0-or-later",
     "version": "3.0.0-dev",
     "private": true,
     "engines": {

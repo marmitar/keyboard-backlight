@@ -1,4 +1,6 @@
-# Keyboard Backlight Extensions
+# Keyboard Backlight Extension
+
+GNOME Shell Extension to help handling keyboard backlight on Scroll Lock.
 
 ## Installation
 
